@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: n8n start
+  web: n8n
