@@ -90,17 +90,15 @@ function parseJson<T>(data: string | T): T {
 
 const globalConfig = Container.get(GlobalConfig);
 const dbType = globalConfig.database.type;
-const isMysql = ['mariadb', 'mysqldb'].includes(dbType);
 const isSqlite = dbType === 'sqlite';
 const isPostgres = dbType === 'postgresdb';
-const dbName = globalConfig.database[dbType === 'mariadb' ? 'mysqldb' : dbType].database;
+const dbName = globalConfig.database[dbType].database;
 const tablePrefix = globalConfig.database.tablePrefix;
 
 const createContext = (queryRunner: QueryRunner, migration: Migration): MigrationContext => ({
 	logger: Container.get(Logger),
 	tablePrefix,
 	dbType,
-	isMysql,
 	isSqlite,
 	isPostgres,
 	dbName,
@@ -178,6 +176,11 @@ const createContext = (queryRunner: QueryRunner, migration: Migration): Migratio
 });
 
 export const wrapMigration = (migration: Migration) => {
+	const prototype = migration.prototype as unknown as { __n8n_wrapped?: boolean };
+	if (prototype.__n8n_wrapped === true) {
+		return;
+	}
+	prototype.__n8n_wrapped = true;
 	const { up, down } = migration.prototype;
 	if (up) {
 		Object.assign(migration.prototype, {
